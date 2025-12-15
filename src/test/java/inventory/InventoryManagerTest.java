@@ -5,118 +5,180 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
-/**
- * Unit tests for InventoryManager class.
- * TODO: Write comprehensive tests for inventory management operations.
- */
 class InventoryManagerTest {
 
-    // TODO: Declare test instance
-    // private InventoryManager manager;
+    private InventoryManager manager;
 
-    /**
-     * TODO: Set up fresh instance before each test
-     */
     @BeforeEach
     void setUp() {
-        // TODO: Create new InventoryManager instance
-        // manager = new InventoryManager();
+        manager = new InventoryManager();
     }
 
-    /**
-     * TODO: Test adding products to inventory
-     */
     @Test
     void testAddProduct() {
-        // TODO: Add a valid product
-        // Verify it's added successfully
-        // Check inventory contains the product
+        Product book = ProductFactory.createProduct(
+                "B001",
+                "Java Book",
+                ProductFactory.BOOK_TYPE,
+                20.0,
+                10
+        );
+
+        manager.addProduct(book);
+
+        assertEquals(1, manager.getProducts().size());
+        assertEquals(book, manager.getProductById("B001"));
     }
 
-    /**
-     * TODO: Test adding product with invalid parameters
-     */
     @Test
     void testAddInvalidProduct() {
-        // TODO: Try adding product with invalid price
-        // Verify appropriate error handling
-        // Check inventory remains unchanged
+        Product invalidBook = ProductFactory.createProduct(
+                "B002",
+                "Cheap Book",
+                ProductFactory.BOOK_TYPE,
+                5.0,
+                5
+        );
+
+        manager.addProduct(invalidBook);
+
+        assertEquals(1, manager.getProducts().size());
     }
 
-    /**
-     * TODO: Test selling products
-     */
     @Test
     void testSellProduct() {
-        // TODO: Add product to inventory
-        // Sell some quantity
-        // Verify quantity is reduced correctly
-        // Test with different discount types
+        Product electronics = ProductFactory.createProduct(
+                "E001",
+                "Laptop",
+                ProductFactory.ELECTRONICS_TYPE,
+                1000.0,
+                5
+        );
+
+        manager.addProduct(electronics);
+
+        boolean result = manager.sellProduct("E001", 2, DiscountType.NONE);
+
+        assertTrue(result);
+        assertEquals(3, electronics.getQuantity());
     }
 
-    /**
-     * TODO: Test selling more than available stock
-     */
     @Test
     void testSellInsufficientStock() {
-        // TODO: Add product with limited stock
-        // Try to sell more than available
-        // Verify transaction is rejected
-        // Check stock remains unchanged
+        Product book = ProductFactory.createProduct(
+                "B003",
+                "Algorithms",
+                ProductFactory.BOOK_TYPE,
+                30.0,
+                2
+        );
+
+        manager.addProduct(book);
+
+        boolean result = manager.sellProduct("B003", 5, DiscountType.NONE);
+
+        assertFalse(result);
+        assertEquals(2, book.getQuantity());
     }
 
-    /**
-     * TODO: Test adding stock to existing product
-     */
     @Test
     void testAddStock() {
-        // TODO: Add product to inventory
-        // Add stock to the product
-        // Verify quantity is increased correctly
+        Product book = ProductFactory.createProduct(
+                "B004",
+                "Data Structures",
+                ProductFactory.BOOK_TYPE,
+                25.0,
+                3
+        );
+
+        manager.addProduct(book);
+
+        boolean result = manager.addStock("B004", 5);
+
+        assertTrue(result);
+        assertEquals(8, book.getQuantity());
     }
 
-    /**
-     * TODO: Test inventory value calculation
-     */
     @Test
     void testInventoryValue() {
-        // TODO: Add multiple products with known values
-        // Calculate expected total value
-        // Verify getInventoryValue() returns correct amount
+        Product book = ProductFactory.createProduct(
+                "B005",
+                "Clean Code",
+                ProductFactory.BOOK_TYPE,
+                40.0,
+                2
+        );
+
+        Product electronics = ProductFactory.createProduct(
+                "E002",
+                "Mouse",
+                ProductFactory.ELECTRONICS_TYPE,
+                20.0,
+                3
+        );
+
+        manager.addProduct(book);
+        manager.addProduct(electronics);
+
+        double expectedValue = (40.0 * 2) + (20.0 * 3);
+
+        assertEquals(expectedValue, manager.getInventoryValue());
     }
 
-    /**
-     * TODO: Test low stock detection
-     */
     @Test
     void testLowStockProducts() {
-        // TODO: Add products with various stock levels
-        // Call getLowStockProducts() with threshold
-        // Verify correct products are returned
+        Product book1 = ProductFactory.createProduct(
+                "B006",
+                "Refactoring",
+                ProductFactory.BOOK_TYPE,
+                45.0,
+                1
+        );
+
+        Product book2 = ProductFactory.createProduct(
+                "B007",
+                "Design Patterns",
+                ProductFactory.BOOK_TYPE,
+                50.0,
+                10
+        );
+
+        manager.addProduct(book1);
+        manager.addProduct(book2);
+
+        List<Product> lowStock = manager.getLowStockProducts(3);
+
+        assertEquals(1, lowStock.size());
+        assertEquals("B006", lowStock.get(0).getId());
     }
 
-    /**
-     * TODO: Test operations on non-existent products
-     */
     @Test
     void testNonExistentProduct() {
-        // TODO: Try selling non-existent product
-        // Try adding stock to non-existent product
-        // Verify appropriate error handling
+        boolean sellResult = manager.sellProduct("X999", 1, DiscountType.NONE);
+        boolean stockResult = manager.addStock("X999", 5);
+
+        assertFalse(sellResult);
+        assertFalse(stockResult);
     }
 
-    /**
-     * TODO: Test complete workflow
-     */
     @Test
     void testCompleteWorkflow() {
-        // TODO: Test adding, selling, restocking sequence
-        // Verify state changes correctly throughout
-        // Test statistics are updated properly
-    }
+        Product book = ProductFactory.createProduct(
+                "B008",
+                "Testing Java",
+                ProductFactory.BOOK_TYPE,
+                35.0,
+                10
+        );
 
-    // TODO: Add more tests as needed
-    // - Test edge cases (zero quantities, etc.)
-    // - Test concurrent modifications
-    // - Test with large inventories
+        manager.addProduct(book);
+
+        assertTrue(manager.sellProduct("B008", 3, DiscountType.SEASONAL));
+        assertEquals(7, book.getQuantity());
+
+        assertTrue(manager.addStock("B008", 5));
+        assertEquals(12, book.getQuantity());
+
+        assertEquals(35.0 * 12, manager.getInventoryValue());
+    }
 }
