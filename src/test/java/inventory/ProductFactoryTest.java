@@ -5,71 +5,112 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for ProductFactory class.
- * TODO: Write comprehensive tests for Factory pattern implementation.
  */
 class ProductFactoryTest {
 
-    /**
-     * TODO: Test creating a valid book product
-     */
     @Test
     void testCreateValidBook() {
-        // TODO: Create a book with valid parameters
-        // Assert that product is created successfully
-        // Verify all properties are set correctly
+        Product product = ProductFactory.createProduct(
+                "B001",
+                "Java Book",
+                ProductFactory.BOOK_TYPE,
+                20.0,
+                5
+        );
+
+        assertNotNull(product);
+        assertEquals("B001", product.getId());
+        assertEquals("Java Book", product.getName());
+        assertEquals(ProductFactory.BOOK_TYPE, product.getType());
+        assertEquals(20.0, product.getPrice());
+        assertEquals(5, product.getQuantity());
     }
 
-    /**
-     * TODO: Test creating a valid electronics product
-     */
     @Test
     void testCreateValidElectronics() {
-        // TODO: Create electronics with valid parameters
-        // Assert that product is created successfully
-        // Verify all properties are set correctly
+        Product product = ProductFactory.createProduct(
+                "E001",
+                "Laptop",
+                ProductFactory.ELECTRONICS_TYPE,
+                1000.0,
+                3
+        );
+
+        assertNotNull(product);
+        assertEquals("E001", product.getId());
+        assertEquals("Laptop", product.getName());
+        assertEquals(ProductFactory.ELECTRONICS_TYPE, product.getType());
+        assertEquals(1000.0, product.getPrice());
+        assertEquals(3, product.getQuantity());
     }
 
-    /**
-     * TODO: Test book minimum price validation
-     */
     @Test
     void testBookMinimumPriceValidation() {
-        // TODO: Try creating book with price below $5
-        // Assert that IllegalArgumentException is thrown
-        // Verify error message is appropriate
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ProductFactory.createProduct(
+                        "B002",
+                        "Cheap Book",
+                        ProductFactory.BOOK_TYPE,
+                        4.99,
+                        5
+                )
+        );
+
+        assertEquals("Books must have minimum price of $5.00", exception.getMessage());
     }
 
-    /**
-     * TODO: Test electronics minimum price validation
-     */
     @Test
     void testElectronicsMinimumPriceValidation() {
-        // TODO: Try creating electronics with price below $10
-        // Assert that IllegalArgumentException is thrown
-        // Verify error message is appropriate
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ProductFactory.createProduct(
+                        "E002",
+                        "Cheap Gadget",
+                        ProductFactory.ELECTRONICS_TYPE,
+                        9.99,
+                        5
+                )
+        );
+
+        assertEquals("Electronics must have minimum price of $10.00", exception.getMessage());
     }
 
-    /**
-     * TODO: Test invalid product type
-     */
     @Test
     void testInvalidProductType() {
-        // TODO: Try creating product with invalid type
-        // Assert that IllegalArgumentException is thrown
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ProductFactory.createProduct(
+                        "X001",
+                        "Unknown",
+                        "FOOD",
+                        20.0,
+                        5
+                )
+        );
+
+        assertEquals("Invalid product type: FOOD", exception.getMessage());
     }
 
-    /**
-     * TODO: Test boundary conditions
-     */
     @Test
     void testBoundaryConditions() {
-        // TODO: Test book at exactly $5.00
-        // TODO: Test electronics at exactly $10.00
-        // Both should succeed
-    }
+        Product book = ProductFactory.createProduct(
+                "B003",
+                "Boundary Book",
+                ProductFactory.BOOK_TYPE,
+                5.00,
+                1
+        );
 
-    // TODO: Add more tests as needed
-    // - Test with null parameters
-    // - Test with empty strings
-    // - Test with negative quantities
+        Product electronics = ProductFactory.createProduct(
+                "E003",
+                "Boundary Electronics",
+                ProductFactory.ELECTRONICS_TYPE,
+                10.00,
+                1
+        );
+
+        assertNotNull(book);
+        assertNotNull(electronics);
+    }
 }
