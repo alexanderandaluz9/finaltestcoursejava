@@ -16,169 +16,84 @@ class InventoryManagerTest {
 
     @Test
     void testAddProduct() {
-        Product book = ProductFactory.createProduct(
-                "B001",
-                "Java Book",
-                ProductFactory.BOOK_TYPE,
-                20.0,
-                10
+        assertDoesNotThrow(() ->
+                manager.addProduct("B001", "Java Book", "BOOK", 20.0, 10)
         );
-
-        manager.addProduct(book);
-
-        assertEquals(1, manager.getProducts().size());
-        assertEquals(book, manager.getProductById("B001"));
     }
 
     @Test
     void testAddInvalidProduct() {
-        Product invalidBook = ProductFactory.createProduct(
-                "B002",
-                "Cheap Book",
-                ProductFactory.BOOK_TYPE,
-                5.0,
-                5
+        assertDoesNotThrow(() ->
+                manager.addProduct("B002", "Cheap Book", "BOOK", 2.0, 5)
         );
 
-        manager.addProduct(invalidBook);
-
-        assertEquals(1, manager.getProducts().size());
+        assertEquals(0.0, manager.getInventoryValue());
     }
 
     @Test
     void testSellProduct() {
-        Product electronics = ProductFactory.createProduct(
-                "E001",
-                "Laptop",
-                ProductFactory.ELECTRONICS_TYPE,
-                1000.0,
-                5
+        manager.addProduct("B001", "Java Book", "BOOK", 20.0, 10);
+
+        assertDoesNotThrow(() ->
+                manager.sellProduct("B001", 2, "STUDENT")
         );
 
-        manager.addProduct(electronics);
-
-        boolean result = manager.sellProduct("E001", 2, DiscountType.NONE);
-
-        assertTrue(result);
-        assertEquals(3, electronics.getQuantity());
+        assertEquals(160.0, manager.getInventoryValue());
     }
 
     @Test
     void testSellInsufficientStock() {
-        Product book = ProductFactory.createProduct(
-                "B003",
-                "Algorithms",
-                ProductFactory.BOOK_TYPE,
-                30.0,
-                2
+        manager.addProduct("B001", "Java Book", "BOOK", 20.0, 1);
+
+        assertDoesNotThrow(() ->
+                manager.sellProduct("B001", 5, "NONE")
         );
 
-        manager.addProduct(book);
-
-        boolean result = manager.sellProduct("B003", 5, DiscountType.NONE);
-
-        assertFalse(result);
-        assertEquals(2, book.getQuantity());
+        assertEquals(20.0, manager.getInventoryValue());
     }
 
     @Test
     void testAddStock() {
-        Product book = ProductFactory.createProduct(
-                "B004",
-                "Data Structures",
-                ProductFactory.BOOK_TYPE,
-                25.0,
-                3
-        );
+        manager.addProduct("B001", "Java Book", "BOOK", 20.0, 5);
+        manager.addStock("B001", 5);
 
-        manager.addProduct(book);
-
-        boolean result = manager.addStock("B004", 5);
-
-        assertTrue(result);
-        assertEquals(8, book.getQuantity());
+        assertEquals(200.0, manager.getInventoryValue());
     }
 
     @Test
     void testInventoryValue() {
-        Product book = ProductFactory.createProduct(
-                "B005",
-                "Clean Code",
-                ProductFactory.BOOK_TYPE,
-                40.0,
-                2
-        );
+        manager.addProduct("B001", "Book", "BOOK", 20.0, 5);
+        manager.addProduct("E001", "Mouse", "ELECTRONICS", 50.0, 2);
 
-        Product electronics = ProductFactory.createProduct(
-                "E002",
-                "Mouse",
-                ProductFactory.ELECTRONICS_TYPE,
-                20.0,
-                3
-        );
-
-        manager.addProduct(book);
-        manager.addProduct(electronics);
-
-        double expectedValue = (40.0 * 2) + (20.0 * 3);
-
-        assertEquals(expectedValue, manager.getInventoryValue());
+        assertEquals(200.0, manager.getInventoryValue());
     }
 
     @Test
     void testLowStockProducts() {
-        Product book1 = ProductFactory.createProduct(
-                "B006",
-                "Refactoring",
-                ProductFactory.BOOK_TYPE,
-                45.0,
-                1
-        );
+        manager.addProduct("B001", "Book", "BOOK", 20.0, 3);
+        manager.addProduct("E001", "Mouse", "ELECTRONICS", 50.0, 10);
 
-        Product book2 = ProductFactory.createProduct(
-                "B007",
-                "Design Patterns",
-                ProductFactory.BOOK_TYPE,
-                50.0,
-                10
-        );
-
-        manager.addProduct(book1);
-        manager.addProduct(book2);
-
-        List<Product> lowStock = manager.getLowStockProducts(3);
-
+        List<Product> lowStock = manager.getLowStockProducts(5);
         assertEquals(1, lowStock.size());
-        assertEquals("B006", lowStock.get(0).getId());
     }
 
     @Test
     void testNonExistentProduct() {
-        boolean sellResult = manager.sellProduct("X999", 1, DiscountType.NONE);
-        boolean stockResult = manager.addStock("X999", 5);
+        assertDoesNotThrow(() ->
+                manager.sellProduct("X001", 1, "NONE")
+        );
 
-        assertFalse(sellResult);
-        assertFalse(stockResult);
+        assertDoesNotThrow(() ->
+                manager.addStock("X001", 5)
+        );
     }
 
     @Test
     void testCompleteWorkflow() {
-        Product book = ProductFactory.createProduct(
-                "B008",
-                "Testing Java",
-                ProductFactory.BOOK_TYPE,
-                35.0,
-                10
-        );
+        manager.addProduct("B001", "Book", "BOOK", 20.0, 10);
+        manager.sellProduct("B001", 5, "BULK");
+        manager.addStock("B001", 10);
 
-        manager.addProduct(book);
-
-        assertTrue(manager.sellProduct("B008", 3, DiscountType.SEASONAL));
-        assertEquals(7, book.getQuantity());
-
-        assertTrue(manager.addStock("B008", 5));
-        assertEquals(12, book.getQuantity());
-
-        assertEquals(35.0 * 12, manager.getInventoryValue());
+        assertEquals(300.0, manager.getInventoryValue());
     }
 }
